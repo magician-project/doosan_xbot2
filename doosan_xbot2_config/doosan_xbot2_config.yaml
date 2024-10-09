@@ -19,16 +19,14 @@ xbotcore_threads:
 # plugins
 xbotcore_plugins:
 
-    homing:
-        thread: rt_main
-        type: homing
-        params:
-            qhome: {value: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], type: Eigen::VectorXd}
+    #homing:
+        #thread: rt_main
+        #type: homing
+        #params:
+            #qhome: {value: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], type: Eigen::VectorXd}
 
     ros_io: {thread: nrt_main, type: ros_io, params: {publish_tf: {type: bool, value: true}}}
     ros_control: {thread: nrt_main, type: ros_control, params: {autostart: {type: bool, value: true}}}
-    
-    #gcomp: {thread: rt_main, type: thalesarm_gcomp}
 
     periodic_motion:
         thread: rt_main

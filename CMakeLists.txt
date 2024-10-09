@@ -18,3 +18,9 @@ add_subdirectory(doosan_xbot2_config)
 
 # gazebo
 add_subdirectory(doosan_xbot2_gazebo)
+
+# examples
+option(COMPILE_EXAMPLES ON "Compile XBot2 plugin examples")
+if(${COMPILE_EXAMPLES})
+    add_subdirectory(doosan_xbot2_examples)  
+endif()
