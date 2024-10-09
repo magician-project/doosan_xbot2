@@ -33,14 +33,14 @@ mkdir -p src && catkin_init_workspace
 git clone https://github.com/magician-project/doosan_xbot2.git
 
 # compile it
-cd .. && catkin_make
+cd .. && catkin_make #or catkin build
 
 ```
 
 Source the catkin package if you are using this build tool and possibly include this source in the .bashrc:
 
 ```
-. doosan_xbot2/devel/setup.bash
+. magician_ws/devel/setup.bash
 ```
 
 Set the xbot2 configuration file as described in the tutorial here: https://github.com/ADVRHumanoids/xbot2_examples
