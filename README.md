@@ -1,6 +1,6 @@
 # Doosan XBot2
 
-This package contains the config files and instructions for running the Doosan robot with the XBot2 framework.
+This package contains the config files and instructions for running the Doosan robot with the XBot2 framework. It also contains a xbot2 example plugin to run a periodic motion on the robot.
 
 At the moment, the package works with Ubuntu 20.04 and ROS Noetic.
 
@@ -21,7 +21,7 @@ Let's first install its system dependencies (https://github.com/doosan-robotics/
 
 ### Setup and Configuration
 
-Clone, compile, and install the repo (and its dependencies) for example, using a catkin package:
+Clone, compile, and install the repo (and its dependencies), for example, using a catkin package:
 
 
 ```
@@ -36,3 +36,66 @@ git clone https://github.com/magician-project/doosan_xbot2.git
 cd .. && catkin_make
 
 ```
+
+Source the catkin package if you are using this build tool and possibly include this source in the .bashrc:
+
+```
+. doosan_xbot2/devel/setup.bash
+```
+
+Set the xbot2 configuration file as described in the tutorial here: https://github.com/ADVRHumanoids/xbot2_examples
+
+```
+set_xbot2_config doosan_xbot2/doosan_xbot2_config/doosan_xbot2_config.yaml
+```
+
+### Run the Kinematic Simulation
+
+We offer an RViZ simulation of the Doosan robot, which you can run using the "dummy" control mode:
+
+```
+xbot2-core --hw dummy
+```
+
+You can check the robot execution using RViZ:
+
+```
+rviz -d doosan_xbot2/rviz/doosan_xbot2.rviz
+```
+
+We then offer the xbot2-gui to have a GUI to control and run plugins in the robot:
+
+```
+xbot2-gui
+```
+
+### Run the Dynamic Simulation on Gazebo
+
+From the server side, run gazebo with the xbot2 doosan support:
+
+```
+roslaunch doosan_xbot2_gazebo doosan_xbot2_gazebo.launch 
+```
+
+From the client side, run xbot2 in simulation mode:
+
+```
+xbot2-core --hw sim
+```
+
+You can check the robot execution using RViZ:
+
+```
+rviz -d doosan_xbot2/rviz/doosan_xbot2.rviz
+```
+
+We then offer the xbot2-gui to have a GUI to control and run plugins in the robot:
+
+```
+xbot2-gui
+```
+
+#### Docker
+
+You can also run all the above using docker, following this: https://github.com/ADVRHumanoids/xbot2_examples?tab=readme-ov-file#running-inside-docker-container--
+
