@@ -1,0 +1,6 @@
+<launch>
+
+    <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find doosan_xbot2_config)/rviz/doosan_xbot2.rviz">
+    </node> 
+
+</launch>

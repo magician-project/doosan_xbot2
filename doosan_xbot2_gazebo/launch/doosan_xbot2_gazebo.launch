@@ -2,6 +2,7 @@
 
   <param name="use_sim_time" type="bool" value="true"/>
   <arg name="gazebo" default="true"/>
+  <arg name="rviz" default="true" />
   
   <!-- Args -->
   <arg name="paused" default="false"/>
@@ -46,5 +47,8 @@
           args="-urdf -model h2515 -param robot_description"/>
 
   </group>
+
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find doosan_xbot2_config)/rviz/doosan_xbot2.rviz"> 
+  </node> 
 
 </launch>
