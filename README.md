@@ -32,8 +32,9 @@ mkdir -p src && catkin_init_workspace
 # assuming you are using https
 git clone https://github.com/magician-project/doosan_xbot2.git
 
-# compile it
-cd .. && catkin_make #or catkin build
+# compile and install it
+cd .. 
+catkin_make install #or catkin config --install && catkin build
 ```
 
 Source the catkin package if you are using this build tool and possibly include this source in the .bashrc:
@@ -50,15 +51,16 @@ set_xbot2_config doosan_xbot2/doosan_xbot2_config/doosan_xbot2_config.yaml
 ### Run the Kinematic Simulation
 
 We offer an RViZ simulation of the Doosan robot, which you can run using the "dummy" control mode:  
-*Note* always remember to source the devel space when opening a new terminal, if necessary: `. magician_ws/devel/setup.bash`
 
 **First Terminal**
 ```
+. magician_ws/devel/setup.bash
 roslaunch doosan_xbot2_config doosan_xbot2.launch 
 ```
 
 **Second Terminal**
 ```
+. magician_ws/install/setup.bash
 xbot2-core --hw dummy
 ```
 
@@ -73,12 +75,14 @@ xbot2-gui
 **First Terminal**
 From the server side, run gazebo with the xbot2 doosan support:
 ```
+. magician_ws/devel/setup.bash
 roslaunch doosan_xbot2_gazebo doosan_xbot2_gazebo.launch 
 ```
 
 **Second Terminal**
 From the client side, run xbot2 in simulation mode:
 ```
+. magician_ws/install/setup.bash
 xbot2-core --hw sim
 ```
 
