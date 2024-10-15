@@ -4,7 +4,7 @@ This package contains the config files and instructions for running the Doosan r
 
 At the moment, the package works with Ubuntu 20.04 and ROS Noetic.
 
-## Dependencies
+# Dependencies
 
 Install the following system dependencies:
 
@@ -17,9 +17,9 @@ Install the source dependencies (depending on the build tool you prefer):
 
 Let's first install its system dependencies (https://github.com/doosan-robotics/doosan-robot?tab=readme-ov-file#dependency-packages) and the source ones (e.g., serial), and then, if, for example, you are using catkin, it would be good to use the same workspace described below.
 
-## How to run it?
+# How to run it?
 
-### Setup and Configuration
+## Setup and Configuration
 
 Clone, compile, and install the repo (and its dependencies), for example, using a catkin package:
 
@@ -47,7 +47,7 @@ Set the xbot2 configuration file as described in the tutorial here: https://gith
 set_xbot2_config doosan_xbot2/doosan_xbot2_config/doosan_xbot2_config.yaml
 ```
 
-### Run the Kinematic Simulation
+## Run the Kinematic Simulation
 
 We offer an RViZ simulation of the Doosan robot, which you can run using the "dummy" control mode:  
 
@@ -72,7 +72,7 @@ xbot2-gui
 [magician_xbot2.webm](https://github.com/user-attachments/assets/806277d1-bfb6-460d-9595-2fc77bd77b0a)
 
 
-### Run the Dynamic Simulation on Gazebo
+## Run the Dynamic Simulation on Gazebo
 
 **First Terminal**
 From the server side, run gazebo with the xbot2 doosan support:
@@ -97,7 +97,7 @@ xbot2-gui
 
 [magician_gazebo_xbot2.webm](https://github.com/user-attachments/assets/db8a54b0-9027-4aed-a3ab-4691d85b302b)
 
-### Run the Position Cartesian Controller
+## Run the Position Cartesian Controller
 
 We use CartesI/O https://advrhumanoids.github.io/CartesianInterface/ to obtain online Cartesian control of the Doosan Robot.
 
@@ -116,7 +116,7 @@ roslaunch doosan_cartesio doosan.launch
 [magician_cartesio.webm](https://github.com/user-attachments/assets/a785859e-17db-46f8-b98d-989910121a38)
 
 
-#### Docker
+# Docker
 
 You can also run all the above using docker, following this: https://github.com/ADVRHumanoids/xbot2_examples?tab=readme-ov-file#running-inside-docker-container--
 
