@@ -23,7 +23,6 @@ Let's first install its system dependencies (https://github.com/doosan-robotics/
 
 Clone, compile, and install the repo (and its dependencies), for example, using a catkin package:
 
-
 ```
 # create and initialize the catkin ws
 mkdir -p magician_ws && cd magician_ws
@@ -70,6 +69,9 @@ We then offer the xbot2-gui to have a GUI to control and run plugins in the robo
 xbot2-gui
 ```
 
+[magician_xbot2.webm](https://github.com/user-attachments/assets/806277d1-bfb6-460d-9595-2fc77bd77b0a)
+
+
 ### Run the Dynamic Simulation on Gazebo
 
 **First Terminal**
@@ -87,6 +89,7 @@ xbot2-core --hw sim
 ```
 
 
+
 **Third Terminal**
 We then offer the xbot2-gui to have a GUI to control and run plugins in the robot:
 
@@ -96,7 +99,7 @@ xbot2-gui
 
 ### Run the Position Cartesian Controller
 
-We use CartesI/O https://advrhumanoids.github.io/CartesianInterface/ to obtain online control of the Doosan Robot.
+We use CartesI/O https://advrhumanoids.github.io/CartesianInterface/ to obtain online Cartesian control of the Doosan Robot.
 
 After you run the robot (either in simulation or on the real robot), you need to start the *ros_control* plugin to have access to the robot through ROS:
 
