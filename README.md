@@ -94,6 +94,22 @@ We then offer the xbot2-gui to have a GUI to control and run plugins in the robo
 xbot2-gui
 ```
 
+### Run the Position Cartesian Controller
+
+We use CartesI/O https://advrhumanoids.github.io/CartesianInterface/ to obtain online control of the Doosan Robot.
+
+After you run the robot (either in simulation or on the real robot), you need to start the *ros_control* plugin to have access to the robot through ROS:
+
+```
+rosservice call /xbotcore/ros_control/switch 1
+```
+
+And then launch CartesI/O for the Doosan cartesian control:
+
+```
+roslaunch doosan_cartesio doosan.launch
+```
+
 #### Docker
 
 You can also run all the above using docker, following this: https://github.com/ADVRHumanoids/xbot2_examples?tab=readme-ov-file#running-inside-docker-container--
