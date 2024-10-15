@@ -88,14 +88,14 @@ From the client side, run xbot2 in simulation mode:
 xbot2-core --hw sim
 ```
 
-
-
 **Third Terminal**
 We then offer the xbot2-gui to have a GUI to control and run plugins in the robot:
 
 ```
 xbot2-gui
 ```
+
+[magician_gazebo_xbot2.webm](https://github.com/user-attachments/assets/db8a54b0-9027-4aed-a3ab-4691d85b302b)
 
 ### Run the Position Cartesian Controller
 
@@ -112,6 +112,9 @@ And then launch CartesI/O for the Doosan cartesian control:
 ```
 roslaunch doosan_cartesio doosan.launch
 ```
+
+[magician_cartesio.webm](https://github.com/user-attachments/assets/a785859e-17db-46f8-b98d-989910121a38)
+
 
 #### Docker
 
