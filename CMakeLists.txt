@@ -19,6 +19,12 @@ add_subdirectory(doosan_xbot2_config)
 # gazebo
 add_subdirectory(doosan_xbot2_gazebo)
 
+# HAL
+option(COMPILE_DOOSAN_HAL ON "Compile Doosan HAL support for XBot2")
+if(${COMPILE_DOOSAN_HAL})
+    add_subdirectory(doosan_xbot2_hal)  
+endif()
+
 # examples
 option(COMPILE_EXAMPLES ON "Compile XBot2 plugin examples")
 if(${COMPILE_EXAMPLES})

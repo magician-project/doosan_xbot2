@@ -97,7 +97,7 @@ xbot2-gui
 
 [magician_gazebo_xbot2.webm](https://github.com/user-attachments/assets/db8a54b0-9027-4aed-a3ab-4691d85b302b)
 
-## Run the Position Cartesian Controller
+## Run the Cartesian Controller
 
 We use CartesI/O https://advrhumanoids.github.io/CartesianInterface/ to obtain online Cartesian control of the Doosan Robot.
 
@@ -114,6 +114,10 @@ roslaunch doosan_cartesio doosan.launch
 ```
 
 [magician_cartesio.webm](https://github.com/user-attachments/assets/a785859e-17db-46f8-b98d-989910121a38)
+
+# Run the Doosan H2515 Hardware
+
+In the compilation phase, enable the COMPILE_DOOSAN_HAL option and the xenomai support if you are using the Xenomai co-kernel ()
 
 
 # Docker

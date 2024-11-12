@@ -9,6 +9,7 @@ ModelInterface:
 xbotcore_device_configs:
     sim: $(rospack find doosan_xbot2_config)/hal/gz.yaml
     dummy: $(rospack find doosan_xbot2_config)/hal/dummy.yaml
+    doosan: $(rospack find doosan_xbot2_config)/hal/doosan.yaml
 
 # threads
 xbotcore_threads:
