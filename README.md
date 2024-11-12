@@ -26,7 +26,7 @@ Clone, compile, and install the repo (and its dependencies), for example, using 
 ```
 # create and initialize the catkin ws
 mkdir -p magician_ws && cd magician_ws
-mkdir -p src && catkin_init_workspace
+mkdir -p src && cd src && catkin_init_workspace
  
 # assuming you are using https
 git clone https://github.com/magician-project/doosan_xbot2.git
