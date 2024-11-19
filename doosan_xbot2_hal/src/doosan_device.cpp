@@ -8,8 +8,8 @@
 
 #define DOOSAN_IP "192.168.137.100" 
 
-bool XBot::Hal::DoosanDriverContainer::g_bHasControlAuthority = true;
-DRAFramework::CDRFLEx XBot::Hal::DoosanDriverContainer::_drfl;
+//bool XBot::Hal::DoosanDriverContainer::g_bHasControlAuthority = true;
+//DRAFramework::CDRFLEx XBot::Hal::DoosanDriverContainer::_drfl;
 
 float XBot::Hal::DoosanDriver::_doosan_q[JOINTS] = {0.0, };
 float XBot::Hal::DoosanDriver::_doosan_qref[JOINTS] = {0.0, };
@@ -111,17 +111,19 @@ void XBot::Hal::DoosanClient::set_damping_ref(double q)
     // TBD set _tx
 }
 
+/*
 void XBot::Hal::DoosanDriverContainer::OnLogAlarm(LPLOG_ALARM tLog)
 {
     cout << "Alarm Info: "
          << "group(" << (unsigned int)tLog->_iGroup << "), index("
          << tLog->_iIndex << "), param(" << tLog->_szParam[0] << "), param("
          << tLog->_szParam[1] << "), param(" << tLog->_szParam[2] << ")" << endl;
-}
+}*/
 
+/*
 void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eState)
 {
-    //cout << "current state: " << (int)eState << endl;
+    cout << "current state: " << (int)eState << endl;
 
     switch ((unsigned char)eState)
     {
@@ -165,7 +167,7 @@ void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eSt
         break;
     }
     return;
-}
+}*/
 
 /*
  * Driver side implementation (i.e. interfacing with the Doosan)
@@ -173,6 +175,45 @@ void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eSt
 XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> devinfo,
                                                         const Device::CommonParams &p) : DeviceContainer(devinfo, p)
 {
+    // TBD register callback and start connection if needed
+    //_drfl.set_on_monitoring_state(XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB);
+    //_drfl.set_on_log_alarm(XBot::Hal::DoosanDriverContainer::OnLogAlarm);
+
+
+    Context().journal().jhigh().jinfo("Ready to go! \n");
+
+    // DRFL initialization
+    bool connect_ok = _drfl.open_connection(DOOSAN_IP);
+
+    Context().journal().jhigh().jinfo("Connection Open! \n");
+
+
+    // obtain the control from the external PC
+    bool external_control_ok = _drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_FORCE_REQUEST);
+
+    _drfl.setup_monitoring_version(1);
+    Context().journal().jhigh().jinfo("Library version: {}\n", _drfl.get_library_version());
+
+    // servo on
+    _drfl.set_robot_control(CONTROL_SERVO_ON);
+    //_drfl.set_digital_output(GPIO_CTRLBOX_DIGITAL_INDEX_10, TRUE);
+
+    // TBD proper management of the doosan state machine
+    while ((_drfl.get_robot_state() != STATE_STANDBY) /*|| !g_bHasControlAuthority*/) {
+
+        Context().journal().jhigh().jinfo("Connect is ok? {} - state: {} - External control? {}\n", 
+            connect_ok, 
+            _drfl.get_robot_state(),
+            external_control_ok);
+        this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    // robot mode MANUAL on REAL doosan
+    _drfl.set_robot_mode(ROBOT_MODE_MANUAL);
+    _drfl.set_robot_system(ROBOT_SYSTEM_REAL);
+
+
+
     Context().journal().jhigh().jinfo("Found {} devices from config file\n", devinfo.size());
 
     if (devinfo.empty())
@@ -199,37 +240,6 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
     }
 
 
-    // DRLFL initialization
-    bool connect_ok = _drfl.open_connection(DOOSAN_IP);
-
-    // TBD register callback and start connection if needed
-    _drfl.set_on_monitoring_state(XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB);
-    _drfl.set_on_log_alarm(XBot::Hal::DoosanDriverContainer::OnLogAlarm);
-
-    // obtain the control from the external PC
-    _drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_FORCE_REQUEST);
-
-    // system info
-    SYSTEM_VERSION tSysVerion = {
-        '\0',
-    };
-    _drfl.get_system_version(&tSysVerion);
-    _drfl.setup_monitoring_version(1);
-    cout << "System version: " << tSysVerion._szController << endl;
-    cout << "Library version: " << _drfl.get_library_version() << endl;
-
-    // servo on
-    _drfl.set_robot_control(CONTROL_SERVO_ON);
-    //_drfl.set_digital_output(GPIO_CTRLBOX_DIGITAL_INDEX_10, TRUE);
-
-    // TBD proper management of the doosan state machine
-    while ((_drfl.get_robot_state() != STATE_STANDBY) || !g_bHasControlAuthority)
-        this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    // robot mode MANUAL on REAL doosan
-    _drfl.set_robot_mode(ROBOT_MODE_MANUAL);
-    _drfl.set_robot_system(ROBOT_SYSTEM_REAL);
-
     // connect to RT control
     _drfl.connect_rt_control();
     //sleep(1);
@@ -249,6 +259,7 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
 
     // start RT control
     _drfl.start_rt_control();
+
 }
 
 XBot::Hal::DoosanDriver::DoosanDriver(DeviceInfo di,

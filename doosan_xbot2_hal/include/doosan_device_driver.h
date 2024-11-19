@@ -57,11 +57,11 @@ namespace XBot
                                   const Device::CommonParams &p);
         private:
 
-            static void OnMonitoringStateCB(const ROBOT_STATE eState);
-            static void OnLogAlarm(LPLOG_ALARM tLog);
+            //static void OnMonitoringStateCB(const ROBOT_STATE eState);
+            //static void OnLogAlarm(LPLOG_ALARM tLog);
 
-            static DRAFramework::CDRFLEx _drfl;
-            static bool g_bHasControlAuthority;
+            DRAFramework::CDRFLEx _drfl;
+            //static bool g_bHasControlAuthority;
         };
 
     }
