@@ -1,0 +1,4 @@
+g++ -c main.cpp
+
+g++ -o drfl_test main.o ../../doosan_xbot2_hal/external/libDRFL.a ../../doosan_xbot2_hal/external/libPocoFoundation.so.62 ../../doosan_xbot2_hal/external/libPocoNet.so.62 
+
