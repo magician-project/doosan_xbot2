@@ -6,22 +6,16 @@
 #define DEG_TO_RAD(deg) (deg * (2 * M_PI) / 360.0) // From deg to rad
 #define RAD_TO_DEG(rad) (rad * 360.0 / (2 * M_PI)) // From rad to deg
 
-#define DOOSAN_IP "192.168.137.100" 
+#define DOOSAN_IP "192.168.137.100"
 
-//bool XBot::Hal::DoosanDriverContainer::g_bHasControlAuthority = true;
-//DRAFramework::CDRFLEx XBot::Hal::DoosanDriverContainer::_drfl;
-
-float XBot::Hal::DoosanDriver::_doosan_q[JOINTS] = {0.0, };
-float XBot::Hal::DoosanDriver::_doosan_qref[JOINTS] = {0.0, };
-float XBot::Hal::DoosanDriver::_doosan_qref_prev[JOINTS] = { 0.0, };
+XBot::Hal::DoosanDriverContainer *XBot::Hal::DoosanDriverContainer::_instance = nullptr;
 
 /*
  * Client side implementation (i.e. used by plugin implementers)
  */
 
 // JointBase
-double
-XBot::Hal::DoosanClient::get_link_pos() const
+double XBot::Hal::DoosanClient::get_link_pos() const
 {
     return _rx.position;
 }
@@ -111,16 +105,55 @@ void XBot::Hal::DoosanClient::set_damping_ref(double q)
     // TBD set _tx
 }
 
-/*
+void XBot::Hal::DoosanDriverContainer::StaticLogAlarmCB(LPLOG_ALARM tLog)
+{
+    if (_instance)
+    {
+        _instance->OnLogAlarm(tLog);
+    }
+}
+
+void XBot::Hal::DoosanDriverContainer::StaticMonitoringStateCB(const ROBOT_STATE eState)
+{
+    if (_instance)
+    {
+        _instance->OnMonitoringStateCB(eState);
+    }
+}
+
+void XBot::Hal::DoosanDriverContainer::StaticMonitroingAccessControlCB(
+    const MONITORING_ACCESS_CONTROL eTrasnsitControl)
+{
+    if (_instance)
+    {
+        _instance->OnMonitroingAccessControlCB(eTrasnsitControl);
+    }
+}
+
+void XBot::Hal::DoosanDriverContainer::StaticTpInitializingCompleted()
+{
+    if (_instance)
+    {
+        _instance->OnTpInitializingCompleted();
+    }
+}
+
+void XBot::Hal::DoosanDriverContainer::StaticRTMonitoringData(LPRT_OUTPUT_DATA_LIST tData)
+{
+    if (_instance)
+    {
+        _instance->OnRTMonitoringData(tData);
+    }
+}
+
 void XBot::Hal::DoosanDriverContainer::OnLogAlarm(LPLOG_ALARM tLog)
 {
     cout << "Alarm Info: "
          << "group(" << (unsigned int)tLog->_iGroup << "), index("
          << tLog->_iIndex << "), param(" << tLog->_szParam[0] << "), param("
          << tLog->_szParam[1] << "), param(" << tLog->_szParam[2] << ")" << endl;
-}*/
+}
 
-/*
 void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eState)
 {
     cout << "current state: " << (int)eState << endl;
@@ -147,7 +180,7 @@ void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eSt
         if (g_bHasControlAuthority)
         {
             cout << "STATE_SAFE_OFF2" << endl;
-            _drfl.SetRobotControl(CONTROL_SERVO_ON);
+            //_drfl.SetRobotControl(CONTROL_SERVO_ON);
         }
         break;
     case STATE_SAFE_STOP2:
@@ -161,13 +194,60 @@ void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eSt
         }
         break;
     case STATE_RECOVERY:
-        _drfl.SetRobotControl(CONTROL_RESET_RECOVERY);
+        //_drfl.SetRobotControl(CONTROL_RESET_RECOVERY);
         break;
     default:
         break;
     }
     return;
-}*/
+}
+
+void XBot::Hal::DoosanDriverContainer::OnMonitroingAccessControlCB(
+    const MONITORING_ACCESS_CONTROL eTrasnsitControl)
+{
+    switch (eTrasnsitControl)
+    {
+    case MONITORING_ACCESS_CONTROL_REQUEST:
+        _drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_RESPONSE_NO);
+        // Drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_RESPONSE_YES);
+        break;
+    case MONITORING_ACCESS_CONTROL_GRANT:
+        g_bHasControlAuthority = TRUE;
+        // cout << "GRANT1" << endl;
+        // cout << "MONITORINGCB : " << (int)Drfl.GetRobotState() << endl;
+        OnMonitoringStateCB(_drfl.GetRobotState());
+        // cout << "GRANT2" << endl;
+        break;
+    case MONITORING_ACCESS_CONTROL_DENY:
+    case MONITORING_ACCESS_CONTROL_LOSS:
+        g_bHasControlAuthority = FALSE;
+        if (g_TpInitailizingComplted)
+        {
+            // assert(Drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_REQUEST));
+            _drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_FORCE_REQUEST);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void XBot::Hal::DoosanDriverContainer::OnTpInitializingCompleted()
+{
+    g_TpInitailizingComplted = TRUE;
+    _drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_FORCE_REQUEST);
+}
+
+void XBot::Hal::DoosanDriverContainer::OnRTMonitoringData(LPRT_OUTPUT_DATA_LIST tData)
+{
+    /*
+    printf("timestamp : %.3f\n", tData->time_stamp);
+    printf("actual_joint_position : %f %f %f %f %f %f\n", tData->actual_joint_position[0], tData->actual_joint_position[1], tData->actual_joint_position[2], tData->actual_joint_position[3], tData->actual_joint_position[4], tData->actual_joint_position[5]);
+    printf("actual_motor_torque : %f %f %f %f %f %f\n", tData->actual_motor_torque[0], tData->actual_motor_torque[1], tData->actual_motor_torque[2], tData->actual_motor_torque[3], tData->actual_motor_torque[4], tData->actual_motor_torque[5]);
+    printf("actual_grav_torque : %f %f %f %f %f %f\n", tData->gravity_torque[0], tData->gravity_torque[1], tData->gravity_torque[2], tData->gravity_torque[3], tData->gravity_torque[4], tData->gravity_torque[5]);
+    printf("target torque : %f %f %f %f %f %f\n", tData->target_motor_torque[0], tData->target_motor_torque[1], tData->target_motor_torque[2], tData->target_motor_torque[3], tData->target_motor_torque[4], tData->target_motor_torque[5]);
+    */
+}
 
 /*
  * Driver side implementation (i.e. interfacing with the Doosan)
@@ -175,18 +255,24 @@ void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eSt
 XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> devinfo,
                                                         const Device::CommonParams &p) : DeviceContainer(devinfo, p)
 {
-    // TBD register callback and start connection if needed
-    //_drfl.set_on_monitoring_state(XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB);
-    //_drfl.set_on_log_alarm(XBot::Hal::DoosanDriverContainer::OnLogAlarm);
+    if (_instance == nullptr)
+    {
+        _instance = this;
+    }
 
+    // register callback and start connection if needed
+    _drfl.set_on_monitoring_state(XBot::Hal::DoosanDriverContainer::StaticMonitoringStateCB);
+    _drfl.set_on_monitoring_access_control(XBot::Hal::DoosanDriverContainer::StaticMonitroingAccessControlCB);
+    _drfl.set_on_tp_initializing_completed(XBot::Hal::DoosanDriverContainer::StaticTpInitializingCompleted);
+    _drfl.set_on_log_alarm(XBot::Hal::DoosanDriverContainer::StaticLogAlarmCB);
+    _drfl.set_on_rt_monitoring_data(XBot::Hal::DoosanDriverContainer::StaticRTMonitoringData);
 
-    Context().journal().jhigh().jinfo("Ready to go! \n");
+    Context().journal().jhigh().jinfo("DoosanDriverContainer ready to setup!\n");
 
-    // DRFL initialization
+    // DRFL open connection
     bool connect_ok = _drfl.open_connection(DOOSAN_IP);
 
-    Context().journal().jhigh().jinfo("Connection Open! \n");
-
+    Context().journal().jhigh().jinfo("Connection with Doosan open!\n");
 
     // obtain the control from the external PC
     bool external_control_ok = _drfl.ManageAccessControl(MANAGE_ACCESS_CONTROL_FORCE_REQUEST);
@@ -198,21 +284,15 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
     _drfl.set_robot_control(CONTROL_SERVO_ON);
     //_drfl.set_digital_output(GPIO_CTRLBOX_DIGITAL_INDEX_10, TRUE);
 
-    // TBD proper management of the doosan state machine
-    while ((_drfl.get_robot_state() != STATE_STANDBY) /*|| !g_bHasControlAuthority*/) {
+    while ((_drfl.get_robot_state() != STATE_STANDBY) || !g_bHasControlAuthority)
+    {
 
-        Context().journal().jhigh().jinfo("Connect is ok? {} - state: {} - External control? {}\n", 
-            connect_ok, 
-            _drfl.get_robot_state(),
-            external_control_ok);
+        Context().journal().jhigh().jinfo("Connect is ok? {} - state: {} - External control? {}\n",
+                                          connect_ok,
+                                          _drfl.get_robot_state(),
+                                          external_control_ok);
         this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
-
-    // robot mode MANUAL on REAL doosan
-    _drfl.set_robot_mode(ROBOT_MODE_MANUAL);
-    _drfl.set_robot_system(ROBOT_SYSTEM_REAL);
-
-
 
     Context().journal().jhigh().jinfo("Found {} devices from config file\n", devinfo.size());
 
@@ -233,45 +313,62 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
             auto d = std::make_shared<DoosanDriver>(di, p);
 
             addDevice(d);
-
-            // pass the drfl static object to the driver
-            d->initialize(_drfl);
         }
     }
 
+    // robot mode MANUAL on REAL doosan
+    _drfl.set_robot_mode(ROBOT_MODE_MANUAL);
+    _drfl.set_robot_system(ROBOT_SYSTEM_REAL);
 
     // connect to RT control
     _drfl.connect_rt_control();
-    //sleep(1);
 
     // info for rt control
-    cout << _drfl.get_rt_control_input_data_list(_drfl.get_rt_control_input_version_list()) << endl;
-    cout << _drfl.get_rt_control_output_data_list(_drfl.get_rt_control_output_version_list()) << endl;
-    
-    //sleep(1);
-    //_drfl.set_on_rt_monitoring_data(OnRTMonitoringData);
-    //sleep(1);
+    Context().journal().jhigh().jinfo("RT Doosan Input {}\n",
+                                      _drfl.get_rt_control_input_data_list(_drfl.get_rt_control_input_version_list()));
+    Context().journal().jhigh().jinfo("RT Doosan Output {}\n",
+                                      _drfl.get_rt_control_output_data_list(_drfl.get_rt_control_output_version_list()));
 
     // rt control configuration
-    _drfl.set_rt_control_input("v1.0", 0.01, 10);
-    _drfl.set_rt_control_output("v1.0", 0.01, 10);
-    //sleep(1);
+    _drfl.set_rt_control_input("v1.0", 0.1, 1000);
+    _drfl.set_rt_control_output("v1.0", 0.1, 1000);
 
     // start RT control
     _drfl.start_rt_control();
+}
 
+bool XBot::Hal::DoosanDriverContainer::sense_all()
+{
+    bool sense_ok = true;
+
+    _doosan_data = _drfl.read_data_rt();
+    memcpy(_doosan_q, _doosan_data->actual_joint_position, sizeof(float) * JOINTS);
+    //memcpy(_doosan_torque, data->actual_joint_torque, sizeof(float) * JOINTS);
+
+    Context().journal().jhigh().jok("_doosan_q {}", _doosan_q[1]);
+    Context().journal().jhigh().jinfo("timestamp {}", _doosan_data->time_stamp);
+
+    return DeviceContainer::sense_all();
+}
+
+bool XBot::Hal::DoosanDriverContainer::move_all()
+{
+    bool move_ok = false;
+
+    //Context().journal().jhigh().jinfo("moveall !");
+
+    return DeviceContainer::move_all();
 }
 
 XBot::Hal::DoosanDriver::DoosanDriver(DeviceInfo di,
-                                      const CommonParams &params) : DeviceDriverTpl(di, params),
-                                                                    _safety(di, get_period_sec(), JointSafety::force_safety_flag::safety_required)
+                                          const CommonParams &params) : DeviceDriverTpl(di, params),
+                                                                        _safety(di, get_period_sec(), JointSafety::force_safety_flag::safety_required)
 {
 
     // get param manager
     auto &pm = Context().paramManager();
 
     // do initialization
-
     for (int i = 0; i < NUMBER_OF_JOINT; i++)
     {
         _q_dot_d[i] = -10000;
@@ -289,18 +386,22 @@ XBot::Hal::DoosanDriver::DoosanDriver(DeviceInfo di,
     Context().journal().jhigh().jok("connected to {} with name '{}' and period '{} s' \n", di.type, di.name, get_period_sec());
 }
 
-void XBot::Hal::DoosanDriver::initialize(DRAFramework::CDRFLEx& drfl) {
-    _drfl = drfl;
-}
-
 bool XBot::Hal::DoosanDriver::sense_impl()
 {
+    return true;
     // receive from DRFL TBD optimize from the container
     bool recv_ok = true;
-    memcpy(_doosan_q, _drfl.read_data_rt()->actual_joint_position, sizeof(float) * JOINTS);
+
+    /*LPRT_OUTPUT_DATA_LIST data = _drfl.read_data_rt();
+    memcpy(_doosan_q, data->actual_joint_position, sizeof(float) * JOINTS);
+    memcpy(_doosan_torque, data->actual_joint_torque, sizeof(float) * JOINTS);
 
     // transfer the data from Doosan to XBot packet TBD!
     _rx.position = DEG_TO_RAD(_doosan_q[get_id() - 1]);
+    _rx.torque = _doosan_torque[get_id() - 1];
+    */
+
+    //Context().journal().jhigh().jok("mode {}", data->control_mode);
 
     // init tx values only at the first valid recv
     if (recv_ok && !_tx_initialized)
@@ -351,15 +452,20 @@ bool XBot::Hal::DoosanDriver::move_impl()
         _tx.torque_ref = _tx_xbot_safe.tor_ref;
     }
 
+    /*
     // transfer the data from safe XBot packet (_tx_xbot_safe) to Doosan
     _doosan_qref[get_id() - 1] = RAD_TO_DEG(_tx_xbot_safe.pos_ref);
 
     bool send_ok = true;
     // send to doosan
-    if (get_id() == 6){
-        send_ok = _drfl.servoj_rt(_doosan_qref, _q_dot_d, _q_ddot_d, 0.0);
+    if (get_id() == 6)
+    {
+        send_ok = _drfl.servoj_rt(_doosan_qref, _q_dot_d, _q_ddot_d, 0.02);
+        //Context().journal().jhigh().jok("send_ok {}", send_ok);
     }
+    */
 
+    bool send_ok = true;
     return send_ok;
 }
 
