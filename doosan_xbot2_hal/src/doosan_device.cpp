@@ -156,7 +156,7 @@ void XBot::Hal::DoosanDriverContainer::OnLogAlarm(LPLOG_ALARM tLog)
 
 void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eState)
 {
-    cout << "current state: " << (int)eState << endl;
+    //cout << "current state: " << (int)eState << endl;
 
     switch ((unsigned char)eState)
     {
@@ -176,11 +176,11 @@ void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eSt
         }
         break;
     case STATE_SAFE_OFF:
-        cout << "STATE_SAFE_OFF1" << endl;
+        //cout << "STATE_SAFE_OFF1" << endl;
         if (g_bHasControlAuthority)
         {
-            cout << "STATE_SAFE_OFF2" << endl;
-            //_drfl.SetRobotControl(CONTROL_SERVO_ON);
+            //cout << "STATE_SAFE_OFF2" << endl;
+            //_drfl.SetRobotControl(CONTROL_SERVO_ON); // TBD check if really needed
         }
         break;
     case STATE_SAFE_STOP2:
@@ -282,7 +282,7 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
 
     // servo on
     _drfl.set_robot_control(CONTROL_SERVO_ON);
-    //_drfl.set_digital_output(GPIO_CTRLBOX_DIGITAL_INDEX_10, TRUE);
+    _drfl.set_digital_output(GPIO_CTRLBOX_DIGITAL_INDEX_10, TRUE);
 
     while ((_drfl.get_robot_state() != STATE_STANDBY) || !g_bHasControlAuthority)
     {
@@ -313,8 +313,17 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
             auto d = std::make_shared<DoosanDriver>(di, p);
 
             addDevice(d);
+            
+            // init driver param         
+            _q_dot_d[i-1] = -10000;
+            _q_ddot_d[i-1] = -10000;
+
         }
     }
+
+    // init container variables
+    _container_rx.init();
+    _container_tx.init();
 
     // robot mode MANUAL on REAL doosan
     _drfl.set_robot_mode(ROBOT_MODE_MANUAL);
@@ -330,8 +339,8 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
                                       _drfl.get_rt_control_output_data_list(_drfl.get_rt_control_output_version_list()));
 
     // rt control configuration
-    _drfl.set_rt_control_input("v1.0", 0.1, 1000);
-    _drfl.set_rt_control_output("v1.0", 0.1, 1000);
+    _drfl.set_rt_control_output("v1.0", 0.001, 10);
+    //_drfl.set_rt_control_input("v1.0", 0.001, 10); //TX from xbot2 to doosan
 
     // start RT control
     _drfl.start_rt_control();
@@ -341,39 +350,59 @@ bool XBot::Hal::DoosanDriverContainer::sense_all()
 {
     bool sense_ok = true;
 
-    _doosan_data = _drfl.read_data_rt();
+    _doosan_data = _drfl.read_data_rt(); // TBD check what is needed in terms of memcpy
     memcpy(_doosan_q, _doosan_data->actual_joint_position, sizeof(float) * JOINTS);
-    //memcpy(_doosan_torque, data->actual_joint_torque, sizeof(float) * JOINTS);
+    memcpy(_doosan_torque, _doosan_data->actual_joint_torque, sizeof(float) * JOINTS);
 
-    Context().journal().jhigh().jok("_doosan_q {}", _doosan_q[1]);
-    Context().journal().jhigh().jinfo("timestamp {}", _doosan_data->time_stamp);
+    memcpy(_doosan_qref, _doosan_data->target_joint_position, sizeof(float) * JOINTS);
 
-    return DeviceContainer::sense_all();
+    //Context().journal().jhigh().jok("_doosan_qref {}", _doosan_qref[0]);
+    //Context().journal().jhigh().jinfo("timestamp {}", _doosan_data->time_stamp);
+
+    for (size_t i = 1; i <= JOINTS; i++) {
+        _doosan_q[i - 1] = DEG_TO_RAD(_doosan_q[i - 1]);
+        _container_rx.position = _doosan_q[i - 1]; 
+        _container_rx.torque = _doosan_torque[i - 1];
+
+        _doosan_qref[i - 1] = DEG_TO_RAD(_doosan_qref[i - 1]);  // TBD do an utils function
+        _container_rx.position_ref = _doosan_qref[i - 1];
+
+        get_device(i)->set_rx(_container_rx);
+    }
+
+    return DeviceContainer::sense_all() && sense_ok;
 }
 
 bool XBot::Hal::DoosanDriverContainer::move_all()
 {
-    bool move_ok = false;
+    bool move_ok = true;
 
+    for (size_t i = 1; i <= JOINTS; i++) {
+        _doosan_qref[i-1] = RAD_TO_DEG(_doosan_qref[i-1]); // TBD do an utils function
+
+        get_device(i)->get_tx(_container_tx);
+        _container_tx.position_ref = RAD_TO_DEG(_container_tx.position_ref);
+
+        _doosan_qref[i-1] = _container_tx.position_ref;
+        //Context().journal().jhigh().jok("_doosan_qref {}", _doosan_qref[i-1]);
+    }
+
+
+    //move_ok = _drfl.servoj_rt(_doosan_qref, _q_dot_d, _q_ddot_d, 0.001*20); // SHAKYYYYY
     //Context().journal().jhigh().jinfo("moveall !");
+    //Context().journal().jhigh().jok("_doosan_qref {}", _doosan_qref[4]);
 
-    return DeviceContainer::move_all();
+
+    return DeviceContainer::move_all() && move_ok;
 }
 
-XBot::Hal::DoosanDriver::DoosanDriver(DeviceInfo di,
-                                          const CommonParams &params) : DeviceDriverTpl(di, params),
-                                                                        _safety(di, get_period_sec(), JointSafety::force_safety_flag::safety_required)
+XBot::Hal::DoosanDriver::DoosanDriver( DeviceInfo di,
+                                       const CommonParams &params) : DeviceDriverTpl(di, params),
+                                                                    _safety(di, get_period_sec(), JointSafety::force_safety_flag::safety_required)
 {
 
     // get param manager
     auto &pm = Context().paramManager();
-
-    // do initialization
-    for (int i = 0; i < NUMBER_OF_JOINT; i++)
-    {
-        _q_dot_d[i] = -10000;
-        _q_ddot_d[i] = -10000;
-    }
 
     // register the device for Position, Velocity and Effort control modes
     register_resource(JointBase::Resource::Position,
@@ -388,7 +417,6 @@ XBot::Hal::DoosanDriver::DoosanDriver(DeviceInfo di,
 
 bool XBot::Hal::DoosanDriver::sense_impl()
 {
-    return true;
     // receive from DRFL TBD optimize from the container
     bool recv_ok = true;
 
@@ -401,7 +429,7 @@ bool XBot::Hal::DoosanDriver::sense_impl()
     _rx.torque = _doosan_torque[get_id() - 1];
     */
 
-    //Context().journal().jhigh().jok("mode {}", data->control_mode);
+    //Context().journal().jhigh().jok("sense impl");
 
     // init tx values only at the first valid recv
     if (recv_ok && !_tx_initialized)
@@ -465,8 +493,9 @@ bool XBot::Hal::DoosanDriver::move_impl()
     }
     */
 
-    bool send_ok = true;
-    return send_ok;
+    //Context().journal().jhigh().jok("move impl");
+
+    return true;
 }
 
 XBOT2_REGISTER_DEVICE(XBot::Hal::DoosanDriverContainer,

@@ -7,9 +7,9 @@ catkin_package()
 find_package(xbot2 REQUIRED)
 find_package(matlogger2 REQUIRED)
 
-option(XBOT2_ENABLE_XENO ON "Compile against xenomai")
+option(XBOT2_ENABLE_XENO OFF "Compile against xenomai")
 # set manually xenomai support
-set(XBOT2_ENABLE_XENO ON)
+set(XBOT2_ENABLE_XENO OFF)
 
 include_directories(${matlogger2_INCLUDE_DIRS})
 

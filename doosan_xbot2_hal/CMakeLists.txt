@@ -8,7 +8,7 @@ find_package(xbot2 REQUIRED)
 
 option(XBOT2_ENABLE_XENO OFF "Compile against xenomai")
 # set manually xenomai support
-set(XBOT2_ENABLE_XENO ON)
+set(XBOT2_ENABLE_XENO OFF)
 
 # headers
 include_directories(include ${XBOT2_INCLUDE_DIRS} )

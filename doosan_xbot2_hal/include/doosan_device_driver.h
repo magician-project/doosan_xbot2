@@ -37,9 +37,6 @@ namespace XBot
             joint_tx _tx_xbot, _tx_xbot_safe;
             joint_rx _rx_xbot;
 
-            float _q_dot_d[NUMBER_OF_JOINT] = {0.0, };
-            float _q_ddot_d[NUMBER_OF_JOINT] = {0.0, };
-
         };
 
         class DoosanDriverContainer : public DeviceContainer<DoosanDriver>
@@ -88,6 +85,13 @@ namespace XBot
             float _doosan_qref_prev[JOINTS] = {
                 0.0,
             };
+
+
+            float _q_dot_d[NUMBER_OF_JOINT] = {0.0, };
+            float _q_ddot_d[NUMBER_OF_JOINT] = {0.0, };
+
+            doosan_rx _container_rx;
+            doosan_tx _container_tx;
 
         };
 
