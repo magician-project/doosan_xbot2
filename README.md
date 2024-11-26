@@ -4,6 +4,8 @@ This package contains the config files and instructions for running the Doosan r
 
 At the moment, the package works with Ubuntu 20.04 and ROS Noetic.
 
+If you are working with Ububtu 22.04 and ROS 2 please refer to https://github.com/magician-project/iit-doosan-ros-pkg
+
 # Dependencies
 
 Install the following system dependencies:
