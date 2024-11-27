@@ -37,8 +37,8 @@ xbotcore_plugins:
         type: periodic_motion
         params:
            q_home_start: {value: [0, 0.5, -0.5, 0, 0, 0], type: Eigen::VectorXd}
-           q_home_end:   {value: [0, -1.0, -1.0, 0, -1.57, -1.57], type: Eigen::VectorXd}
-           time: {value: 20.0, type: double}
+           q_home_end:   {value: [0, -1.0, 1.0, 0.5, -1.57, -1.57], type: Eigen::VectorXd}
+           time: {value: 5.0, type: double}
 
 
 # global parameters

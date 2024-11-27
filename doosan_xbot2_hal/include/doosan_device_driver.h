@@ -76,7 +76,13 @@ namespace XBot
             float _doosan_q[JOINTS] = {
                 0.0,
             };
+            float _doosan_q_dot[JOINTS] = {
+                0.0,
+            };
             float _doosan_torque[JOINTS] = {
+                0.0,
+            };
+            float _doosan_gravity_torque[JOINTS] = {
                 0.0,
             };
             float _doosan_qref[JOINTS] = {
@@ -85,6 +91,18 @@ namespace XBot
             float _doosan_qref_prev[JOINTS] = {
                 0.0,
             };
+            float _doosan_torque_ref[JOINTS] = {
+                0.0,
+            };
+
+            float _kp[JOINTS] = {
+                0.0,
+            };
+
+            float _kd[JOINTS] = {
+                0.0,
+            };
+            
 
 
             float _q_dot_d[NUMBER_OF_JOINT] = {0.0, };

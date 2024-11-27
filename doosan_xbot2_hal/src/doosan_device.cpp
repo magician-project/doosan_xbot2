@@ -205,6 +205,7 @@ void XBot::Hal::DoosanDriverContainer::OnMonitoringStateCB(const ROBOT_STATE eSt
 void XBot::Hal::DoosanDriverContainer::OnMonitroingAccessControlCB(
     const MONITORING_ACCESS_CONTROL eTrasnsitControl)
 {
+    std::cout << eTrasnsitControl << std::endl; // TBD lose time to have control
     switch (eTrasnsitControl)
     {
     case MONITORING_ACCESS_CONTROL_REQUEST:
@@ -315,8 +316,11 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
             addDevice(d);
             
             // init driver param         
-            _q_dot_d[i-1] = -10000;
-            _q_ddot_d[i-1] = -10000;
+            //_q_dot_d[i-1] = -10000; // -10000 treated as none
+            //_q_ddot_d[i-1] = -10000; // -10000 treated as none
+
+            _kp[i-1] = 1000.0;
+            _kd[i-1] = 80.0;
 
         }
     }
@@ -344,6 +348,11 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
 
     // start RT control
     _drfl.start_rt_control();
+
+    _drfl.set_safety_mode(SAFETY_MODE_AUTONOMOUS, SAFETY_MODE_EVENT_ENTER);
+    //sleep(1);
+    _drfl.set_safety_mode(SAFETY_MODE_AUTONOMOUS, SAFETY_MODE_EVENT_MOVE);
+
 }
 
 bool XBot::Hal::DoosanDriverContainer::sense_all()
@@ -352,7 +361,9 @@ bool XBot::Hal::DoosanDriverContainer::sense_all()
 
     _doosan_data = _drfl.read_data_rt(); // TBD check what is needed in terms of memcpy
     memcpy(_doosan_q, _doosan_data->actual_joint_position, sizeof(float) * JOINTS);
+    memcpy(_doosan_q_dot, _doosan_data->actual_joint_velocity, sizeof(float) * JOINTS);
     memcpy(_doosan_torque, _doosan_data->actual_joint_torque, sizeof(float) * JOINTS);
+    memcpy(_doosan_gravity_torque, _doosan_data->gravity_torque, sizeof(float) * JOINTS);
 
     memcpy(_doosan_qref, _doosan_data->target_joint_position, sizeof(float) * JOINTS);
 
@@ -361,7 +372,10 @@ bool XBot::Hal::DoosanDriverContainer::sense_all()
 
     for (size_t i = 1; i <= JOINTS; i++) {
         _doosan_q[i - 1] = DEG_TO_RAD(_doosan_q[i - 1]);
-        _container_rx.position = _doosan_q[i - 1]; 
+        _doosan_q_dot[i - 1] = DEG_TO_RAD(_doosan_q_dot[i - 1]);
+
+        _container_rx.position = _doosan_q[i - 1];
+        _container_rx.velocity = _doosan_q_dot[i - 1];
         _container_rx.torque = _doosan_torque[i - 1];
 
         _doosan_qref[i - 1] = DEG_TO_RAD(_doosan_qref[i - 1]);  // TBD do an utils function
@@ -378,17 +392,34 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
     bool move_ok = true;
 
     for (size_t i = 1; i <= JOINTS; i++) {
-        _doosan_qref[i-1] = RAD_TO_DEG(_doosan_qref[i-1]); // TBD do an utils function
+        //_doosan_qref[i-1] = RAD_TO_DEG(_doosan_qref[i-1]); // TBD do an utils function
 
         get_device(i)->get_tx(_container_tx);
-        _container_tx.position_ref = RAD_TO_DEG(_container_tx.position_ref);
+        //_container_tx.position_ref = RAD_TO_DEG(_container_tx.position_ref);
 
         _doosan_qref[i-1] = _container_tx.position_ref;
         //Context().journal().jhigh().jok("_doosan_qref {}", _doosan_qref[i-1]);
+        //Context().journal().jhigh().jok("_doosan_gravity_torque {}", _doosan_gravity_torque[i-1]);
+        //Context().journal().jhigh().jok("_doosan_q {}", _doosan_q[i-1]);
+        //Context().journal().jhigh().jok("kp {}", _kp[i-1] * (_doosan_qref[i-1] - _doosan_q[i - 1] ) );
+
+        _doosan_torque_ref[i-1] = _doosan_gravity_torque[i-1] + 
+                                  _kp[i-1] * (_doosan_qref[i-1] - _doosan_q[i - 1] ) + 
+                                  _kd[i-1] * (_q_dot_d[i-1] - _doosan_q_dot[i-1]);
+
+        //_container_tx.torque_ref = _doosan_torque_ref[i-1];
+        
+        //Context().journal().jhigh().jok("{} : _doosan_torque_ref {}", i, _doosan_torque_ref[i-1]);
+
+
     }
 
+    move_ok = _drfl.torque_rt(_doosan_torque_ref, 0);
+    
+    ////move_ok = _drfl.servoj_rt(_doosan_qref, _q_dot_d, _q_ddot_d, 0.001*20); // SHAKYYYYY
+    
 
-    //move_ok = _drfl.servoj_rt(_doosan_qref, _q_dot_d, _q_ddot_d, 0.001*20); // SHAKYYYYY
+    
     //Context().journal().jhigh().jinfo("moveall !");
     //Context().journal().jhigh().jok("_doosan_qref {}", _doosan_qref[4]);
 
@@ -467,8 +498,8 @@ bool XBot::Hal::DoosanDriver::move_impl()
 
     // check safety copying to xbot tx data structure
     _tx_xbot.pos_ref = _tx.position_ref; // TBD check it
-    _tx_xbot.vel_ref = 0.0;              // TBD check it
-    _tx_xbot.tor_ref = 0.0;              // TBD check it
+    _tx_xbot.vel_ref = 0.0; //_tx.velocity_ref; // TBD check it
+    _tx_xbot.tor_ref = 0.0; //_tx.torque_ref; // TBD check it
 
     _tx_xbot.mask = 1; // TBD check the mask and use the callback on_rx_recv
 
