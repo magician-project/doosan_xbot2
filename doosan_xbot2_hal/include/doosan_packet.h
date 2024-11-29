@@ -9,6 +9,8 @@ namespace XBot
             double position;
             double velocity;
             double torque;
+            double stiffness;
+            double damping;
 
             double position_ref;
             double velocity_ref;
@@ -19,6 +21,8 @@ namespace XBot
                 position = 0;
                 velocity = 0;
                 torque = 0;
+                stiffness = 1;
+                damping = 1;
 
                 position_ref = 0;
                 velocity_ref = 0;
@@ -31,12 +35,16 @@ namespace XBot
             double position_ref;
             double velocity_ref;
             double torque_ref;
+            double stiffness_ref;
+            double damping_ref;
 
             void init()
             {
                 position_ref = 0;
                 velocity_ref = 0;
                 torque_ref = 0;
+                stiffness_ref = 0;
+                damping_ref = 0;
             }
         };
     }

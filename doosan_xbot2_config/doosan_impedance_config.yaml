@@ -1,0 +1,29 @@
+stack:
+    - [EE]
+
+EE:
+    type: Interaction
+    base_link: base_0
+    distal_link: link6
+    impedance_ref_link: link6
+    force_max:
+        - 100000.0
+        - 100000.0
+        - 100000.0
+        - 10000.0
+        - 10000.0
+        - 10000.0    
+    stiffness:
+        - 10000.0
+        - 10000.0
+        - 10000.0
+        - 1000.0
+        - 1000.0
+        - 1000.0
+    damping:
+        - 0.7
+        - 0.7
+        - 0.7
+        - 0.7
+        - 0.7
+        - 0.7
