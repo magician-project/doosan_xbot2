@@ -1,6 +1,6 @@
 XBotInterface:
-        urdf_path: $(rospack find doosan_xbot2_config)/urdf/h2515.urdf
-        srdf_path: $(rospack find doosan_xbot2_config)/srdf/h2515.srdf
+    urdf_path: $(rospack find doosan_xbot2_config)/urdf/h2515.urdf
+    srdf_path: $(rospack find doosan_xbot2_config)/srdf/h2515.srdf
 
 ModelInterface:
   model_type: "RBDL"
@@ -19,11 +19,14 @@ xbotcore_threads:
 # plugins
 xbotcore_plugins:
 
-    #homing:
-        #thread: rt_main
-        #type: homing
-        #params:
-            #qhome: {value: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], type: Eigen::VectorXd}
+    # Homing plugin is provided togheter with the xbot 
+    # binaries but the source code is visible at 
+    # https://github.com/ADVRHumanoids/xbot2_examples/tree/master/src/homing_example
+    homing:
+        thread: rt_main
+        type: homing
+        params:
+            qhome: {value: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], type: Eigen::VectorXd}
 
     ros_io: {thread: nrt_main, type: ros_io, params: {publish_tf: {type: bool, value: true}}}
     ros_control: {thread: nrt_main, type: ros_control, params: {autostart: {type: bool, value: true}}}

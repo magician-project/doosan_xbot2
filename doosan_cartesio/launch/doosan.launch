@@ -1,0 +1,30 @@
+<launch>
+
+<arg name="rate" default="100.0"/>
+<arg name="prefix" default=""/>
+<arg name="gui" default="true"/>
+<arg name="ver" default="1"/>
+
+<param name="robot_description" 
+        type="string" 
+        command="cat $(find doosan_xbot2_config)/urdf/h2515.urdf"/>
+        
+<param name="robot_description_semantic" 
+        type="string" 
+        command="cat $(find doosan_xbot2_config)/srdf/h2515.srdf"/>
+
+<param name="/cartesian/problem_description" textfile="$(find doosan_cartesio)/config/doosan_simple.yaml"/>
+
+<include file="$(find cartesian_interface)/launch/cartesio.launch">
+    <arg name="rate" value="$(arg rate)"/>
+    <arg name="prefix" value="$(arg prefix)"/>
+    <arg name="is_model_floating_base" value="false"/>
+</include>
+
+<node if="$(arg gui)"
+          type="rviz"
+          name="rviz"
+          pkg="rviz"
+          args="-d $(find doosan_cartesio)/rviz/doosan_cartesio.rviz" />
+
+</launch>
