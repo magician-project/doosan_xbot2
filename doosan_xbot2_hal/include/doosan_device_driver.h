@@ -6,7 +6,7 @@
 #include <xbot2/hal/dev_joint_safety.h>
 #include <xbot2/hal/dev_joint_packet.h>
 
-#include <doosan_packet.h>
+//#include <doosan_packet.h>
 
 #include <DRFLEx.h>
 
@@ -17,8 +17,8 @@ namespace XBot
     namespace Hal
     {
 
-        class DoosanDriver : public DeviceDriverTpl<doosan_rx,
-                                                    doosan_tx>
+        class DoosanDriver : public DeviceDriverTpl<joint_rx,
+                                                    joint_tx>
         {
 
         public:
@@ -34,9 +34,8 @@ namespace XBot
 
             // safety for v2.10
             XBot::Hal::JointSafety _safety;
-            joint_tx _tx_xbot, _tx_xbot_safe;
-            joint_rx _rx_xbot;
 
+            void on_tx_recv(const joint_tx& msg) override;
         };
 
         class DoosanDriverContainer : public DeviceContainer<DoosanDriver>
@@ -88,8 +87,8 @@ namespace XBot
             float _doosan_qref[JOINTS] = {
                 0.0,
             };
-            float _doosan_qref_prev[JOINTS] = {
-                0.0,
+            float _doosan_qdotref[JOINTS] = {
+                0.0, 
             };
             float _doosan_torque_ref[JOINTS] = {
                 0.0,
@@ -103,13 +102,8 @@ namespace XBot
                 0.0,
             };
             
-
-
-            float _q_dot_d[NUMBER_OF_JOINT] = {0.0, };
-            float _q_ddot_d[NUMBER_OF_JOINT] = {0.0, };
-
-            doosan_rx _container_rx;
-            doosan_tx _container_tx;
+            joint_rx _container_rx;
+            joint_tx _container_tx;
 
         };
 

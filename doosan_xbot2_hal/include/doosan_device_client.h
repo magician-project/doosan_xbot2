@@ -1,6 +1,6 @@
 #pragma once
 
-#include <doosan_packet.h>
+//#include <doosan_packet.h>
 #include <doosan_device.h>
 
 namespace XBot
@@ -8,7 +8,7 @@ namespace XBot
     namespace Hal
     {
 
-        class DoosanClient : public DeviceClientTpl<doosan_rx, doosan_tx>,
+        class DoosanClient : public DeviceClientTpl<joint_rx, joint_tx>,
                              public virtual DoosanBase
         {
 

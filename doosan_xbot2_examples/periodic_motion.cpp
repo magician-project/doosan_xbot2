@@ -49,6 +49,8 @@ bool PeriodicMotion::on_initialize()
     _logger = XBot::MatLogger2::MakeLogger("/tmp/periodic_motion_log", logger_opt);
     _logger->set_buffer_mode(XBot::VariableBuffer::Mode::circular_buffer);
 
+
+
     return true;
 }
 
@@ -66,6 +68,13 @@ void PeriodicMotion::on_start()
     // this will increment by the nominal control
     // period at each iteration
     _fake_time = 0.0;
+
+    Eigen::VectorXd _g;
+    _robot->model().computeGravityCompensation(_g);
+    jerror("----------- {} \n", _g);
+
+    double _m = _robot->model().getMass();
+    jerror("----------- {} \n", _m);
 }
 
 

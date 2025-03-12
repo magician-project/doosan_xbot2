@@ -40,26 +40,29 @@ xbotcore_plugins:
            q_home_end:   {value: [0, -0.5, 1.0, 0.5, -1.57, -1.57], type: Eigen::VectorXd}
            time: {value: 5.0, type: double}
 
-    # cartesio_imp: 
-    #     thread: rt_main 
-    #     type: albero_cartesio_rt
-    #     params:
-    #         #ctrl_override: *ctrl_override
-    #         enabled_chains: 
-    #             value: [arm]
-    #             type: vector<string>
-    #         problem_description:
-    #             value: $(rospack find doosan_xbot2_config)/doosan_impedance_config.yaml
-    #             type: file
-    #         solver: {value: AlberoImpedance, type: string}
-    #         enable_feedback: {value: true, type: bool}
-    #         fc_map: {value: {low: 0.85, high: 0.99}, type: map<double>}
-    #         use_payload_estimator:
-    #           value: false  # note: keep false if you care to live
-    #           type: bool
-    #         payload_estimator_link:
-    #           value: link6
-    #           type: string
+    cartesio_imp: 
+        thread: rt_main 
+        type: albero_cartesio_rt
+        params:
+            #ctrl_override: *ctrl_override
+            enabled_chains: 
+                value: [arm]
+                type: vector<string>
+            problem_description:
+                value: $(rospack find doosan_xbot2_config)/doosan_impedance_config.yaml
+                type: file
+            solver: {value: AlberoImpedance, type: string}
+            enable_feedback: {value: true, type: bool}
+            fc_map: {value: {low: 0.85, high: 0.99}, type: map<double>}
+            use_payload_estimator:
+              value: false  # note: keep false if you care to live
+              type: bool
+            payload_estimator_link:
+              value: link6
+              type: string
+            _external_gravity_compensation:
+              value: true  # note: keep false if you care to live
+              type: bool
 
 
 # global parameters
