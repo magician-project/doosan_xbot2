@@ -288,6 +288,18 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
     _drfl.setup_monitoring_version(1);
     Context().journal().jhigh().jinfo("Library version: {}\n", _drfl.get_library_version());
 
+    Context().journal().jhigh().jinfo("Tool set: {}\n", _drfl.get_tool());
+    /*
+    // set grinder tool
+    bool tool_ok = _drfl.set_tool("Dewalt Sander");
+    if(tool_ok) {
+        Context().journal().jhigh().jinfo("Dewalt Sander ok: {}\n", _drfl.get_tool());
+        
+    }
+    else {
+        Context().journal().jhigh().jwarn("Dewalt Sander NOT ok\n");
+    }*/
+
     // servo on
     _drfl.set_robot_control(CONTROL_SERVO_ON);
     
@@ -449,17 +461,20 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
         if(i == 2){
 
             // Context().journal().jhigh().jok("_doosan_qref {}", _doosan_qref[i-1] );
-            // Context().journal().jhigh().jok("_doosan_data->gravity_torque {}", _doosan_data->gravity_torque[i-1]);
-            // Context().journal().jhigh().jok("_doosan_torque_ref CONDA {}", _container_tx.torque_ref);
+            //Context().journal().jhigh().jok("_doosan_data->gravity_torque {}", _doosan_gravity_torque[i - 1]);
+            //Context().journal().jhigh().jok("kp contribution {}", _kp[i-1] * (_doosan_qref[i-1] - _doosan_q[i - 1] ) );
+            //Context().journal().jhigh().jok("kd contribution {}", _kd[i-1] * (_doosan_qdotref[i - 1] - _doosan_q_dot[i - 1]) );
+            //Context().journal().jhigh().jok("_doosan_torque_ref CONDA {}", _container_tx.tor_ref);
             // Context().journal().jhigh().jok("{} : _container_tx position_ref ref {}", i, _container_tx.pos_ref);
             // Context().journal().jhigh().jok("{} : _container_tx velocity_ref {}", i, _container_tx.vel_ref);
             // Context().journal().jhigh().jok("{} : _container_tx torque_ref {}", i, _container_tx.tor_ref);
             // Context().journal().jhigh().jok("{} : _container_tx stiffness_ref {}", i, _container_tx.gain_kp);
             // Context().journal().jhigh().jok("{} : _container_tx damping_ref {}", i, _container_tx.gain_kd);
 
-            _doosan_torque_ref[i - 1] = _container_tx.tor_ref + (256 * _doosan_q[i-1]) + (89 * _doosan_q[i-1] * _doosan_q[i-1]);
+            //_doosan_torque_ref[i - 1] = _container_tx.tor_ref + (256 * _doosan_q[i-1]) + (89 * _doosan_q[i-1] * _doosan_q[i-1]);
 
             //Context().journal().jhigh().jok("_doosan_torque_ref SPRING {}", _doosan_torque_ref[i-1]);
+            //Context().journal().jhigh().jok("_doosan_torque_ref SPRING {}", _container_tx.tor_ref + (256 * _doosan_q[i-1]) + (89 * _doosan_q[i-1] * _doosan_q[i-1]));
         
         } else {
 
@@ -470,19 +485,19 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
         _doosan_torque_ref[i - 1] = _doosan_gravity_torque[i - 1] +
                                     _container_tx.gain_kp * (_doosan_qref[i - 1] - _doosan_q[i - 1]) +
                                     _container_tx.gain_kd * (_doosan_qdotref[i - 1] - _doosan_q_dot[i - 1]) +
-                                    _doosan_torque_ref[i - 1];
+                                    _container_tx.tor_ref;
 
         // should we update hte xbot2 tor ref with the data we send to the doosan, including spring ? (TBD)
         _container_tx.tor_ref = _doosan_torque_ref[i - 1];
         
 
-        //Context().journal().jhigh().jok("_doosan_qref {}", _doosan_qref[i-1]);
+        //Context().journal().jhigh().jok("{} : _doosan_qref {}", i, _doosan_qref[i-1]);
         //Context().journal().jhigh().jok("_doosan_gravity_torque {}", _doosan_gravity_torque[i-1]);
         //Context().journal().jhigh().jok("_doosan_q {}", _doosan_q[i-1]);
         //Context().journal().jhigh().jok("kp {}", _kp[i-1] * (_doosan_qref[i-1] - _doosan_q[i - 1] ) );
         //Context().journal().jhigh().jok("{} : _container_rx stiffness {}", i, _container_rx.stiffness);
         //Context().journal().jhigh().jok("{} : _container_tx stiffness {}", i, _container_tx.stiffness_ref);
-        //Context().journal().jhigh().jok("_doosan_torque_ref {}", _doosan_torque_ref[i-1]);
+        //Context().journal().jhigh().jok("{} : _doosan_torque_ref {}",  i, _doosan_torque_ref[i-1]);
     }
 
     // send the torque to the doosan
