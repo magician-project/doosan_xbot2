@@ -59,22 +59,15 @@ void PeriodicMotion::on_start()
 
     // do some on-start initialization
     _robot->sense();
-    _robot->getPositionReference(_q_start);
+    _robot->getPositionReferenceFeedback(_q_start);
     _robot->getVelocityReference(_q_dot_ref);
-
+    
     _robot->setControlMode(XBot::ControlMode::Position() + XBot::ControlMode::Velocity());
 
     // initialize our fake time variable
     // this will increment by the nominal control
     // period at each iteration
     _fake_time = 0.0;
-
-    Eigen::VectorXd _g;
-    _robot->model().computeGravityCompensation(_g);
-    jerror("----------- {} \n", _g);
-
-    double _m = _robot->model().getMass();
-    jerror("----------- {} \n", _m);
 }
 
 

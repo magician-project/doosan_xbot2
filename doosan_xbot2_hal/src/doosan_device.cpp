@@ -332,7 +332,7 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
             // TBD autodetection
             DeviceInfo di;
             di.id = i;
-            di.name = "joint" + std::to_string(i);
+            di.name = "joint_" + std::to_string(i);
             di.type = "doosan_device";
 
             Context().journal().jhigh().jok("detected {} '{}' with id {} \n",
