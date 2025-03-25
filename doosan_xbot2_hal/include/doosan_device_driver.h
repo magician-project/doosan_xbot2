@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <matlogger2/matlogger2.h>
+
 #include <xbot2/hal/device.h>
 #include <xbot2/hal/dev_joint_safety.h>
 #include <xbot2/hal/dev_joint_packet.h>
@@ -81,6 +83,9 @@ namespace XBot
             float _doosan_torque[JOINTS] = {
                 0.0,
             };
+            float _doosan_torque_no_spring[JOINTS] = {
+                0.0,
+            };
             float _doosan_gravity_torque[JOINTS] = {
                 0.0,
             };
@@ -91,6 +96,9 @@ namespace XBot
                 0.0, 
             };
             float _doosan_torque_ref[JOINTS] = {
+                0.0,
+            };
+            float _doosan_xbot2_torque_ref[JOINTS] = {
                 0.0,
             };
 
@@ -104,6 +112,8 @@ namespace XBot
             
             joint_rx _container_rx;
             joint_tx _container_tx;
+
+            XBot::MatLogger2::Ptr _logger;
 
         };
 

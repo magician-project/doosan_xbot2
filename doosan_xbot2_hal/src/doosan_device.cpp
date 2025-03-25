@@ -8,6 +8,11 @@
 
 #define DOOSAN_IP "192.168.137.100"
 
+std::vector<float> toVector(float arr[JOINTS]) {
+    // Convert the array to a std::vector<Scalar>
+    return std::vector<float>(arr, arr + JOINTS);
+}
+
 XBot::Hal::DoosanDriverContainer *XBot::Hal::DoosanDriverContainer::_instance = nullptr;
 
 /*
@@ -40,6 +45,11 @@ double XBot::Hal::DoosanClient::get_tor() const
     return _rx.torque;
 }
 
+double XBot::Hal::DoosanClient::get_motor_tor() const
+{
+    return _rx.torque;
+}
+
 double XBot::Hal::DoosanClient::get_stiffness() const
 {
     return _rx.gain_kp;
@@ -50,10 +60,16 @@ double XBot::Hal::DoosanClient::get_damping() const
     return _rx.gain_kd;
 }
 
-double XBot::Hal::DoosanClient::get_temp() const
+double XBot::Hal::DoosanClient::get_temp_motor() const
 {
     return 0.0;
 }
+
+double XBot::Hal::DoosanClient::get_temp_board() const
+{
+    return 0.0;
+}
+
 
 double XBot::Hal::DoosanClient::get_pos_ref() const
 {
@@ -66,6 +82,11 @@ double XBot::Hal::DoosanClient::get_vel_ref() const
 }
 
 double XBot::Hal::DoosanClient::get_tor_ref() const
+{
+    return _rx.tor_ref;
+}
+
+double XBot::Hal::DoosanClient::get_motor_tor_ref() const
 {
     return _rx.tor_ref;
 }
@@ -93,6 +114,12 @@ void XBot::Hal::DoosanClient::set_vel_ref(double q)
 }
 
 void XBot::Hal::DoosanClient::set_tor_ref(double q)
+{
+    _tx.tor_ref = q;
+    _tx.mask |= 4;
+}
+
+void XBot::Hal::DoosanClient::set_motor_tor_ref(double q)
 {
     _tx.tor_ref = q;
     _tx.mask |= 4;
@@ -267,6 +294,26 @@ XBot::Hal::DoosanDriverContainer::DoosanDriverContainer(std::vector<DeviceInfo> 
         _instance = this;
     }
 
+    // init logger
+    MatLogger2::Options logger_opt;
+    logger_opt.default_buffer_size = 5e5;
+    logger_opt.default_buffer_size_max_bytes = 5e8;
+    
+    _logger = MatLogger2::MakeLogger("/tmp/doosan_device", logger_opt);
+    _logger->set_buffer_mode(VariableBuffer::Mode::circular_buffer);
+
+    _logger->create("motor_position", JOINTS);
+    _logger->create("motor_velocity", JOINTS);
+    _logger->create("torque", JOINTS);
+    _logger->create("doosan_gravity_torque", JOINTS);
+
+    _logger->create("position_reference", JOINTS);
+    _logger->create("velocity_reference", JOINTS);
+    _logger->create("doosan_xbot2_torque_reference", JOINTS);
+    _logger->create("doosan_torque_reference", JOINTS);
+    _logger->create("joint_stiffness", JOINTS);
+    _logger->create("joint_damping", JOINTS);
+
     // register callback and start connection if needed
     _drfl.set_on_monitoring_state(XBot::Hal::DoosanDriverContainer::StaticMonitoringStateCB);
     _drfl.set_on_monitoring_access_control(XBot::Hal::DoosanDriverContainer::StaticMonitroingAccessControlCB);
@@ -395,6 +442,7 @@ bool XBot::Hal::DoosanDriverContainer::sense_all()
     memcpy(_doosan_q, _doosan_data->actual_joint_position, sizeof(float) * JOINTS);
     memcpy(_doosan_q_dot, _doosan_data->actual_joint_velocity, sizeof(float) * JOINTS);
     memcpy(_doosan_torque, _doosan_data->actual_joint_torque, sizeof(float) * JOINTS);
+    memcpy(_doosan_torque_no_spring, _doosan_data->actual_joint_torque, sizeof(float) * JOINTS);
     memcpy(_doosan_gravity_torque, _doosan_data->gravity_torque, sizeof(float) * JOINTS);
 
     // TX
@@ -434,11 +482,18 @@ bool XBot::Hal::DoosanDriverContainer::sense_all()
             //Context().journal().jhigh().jok("*** _doosan_data->actual_joint_torque {}", _doosan_data->actual_joint_torque[1]);
         
             _container_rx.torque = _doosan_torque[i - 1] - (256 * _doosan_q[i-1]) - (89 * _doosan_q[i-1] * _doosan_q[i-1]);
+            _doosan_torque_no_spring[i-1] = _container_rx.torque;
         }
 
         // set the XBot2 RX with the above data
         get_device(i)->set_rx(_container_rx);
     }
+
+    _logger->add("motor_position", toVector(_doosan_q));
+    _logger->add("motor_velocity", toVector(_doosan_q_dot));
+    _logger->add("torque_no_passive_spring", toVector(_doosan_torque_no_spring));
+    _logger->add("torque_with_passive_spring", toVector(_doosan_torque));
+    _logger->add("doosan_gravity_torque", toVector(_doosan_gravity_torque));
 
     return DeviceContainer::sense_all() && sense_ok;
 }
@@ -455,6 +510,13 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
         _doosan_qref[i-1] = _container_tx.pos_ref;
         // velocity ref from XBot2
         _doosan_qdotref[i-1] = _container_tx.vel_ref;
+        // effort ref from XBot2
+        _doosan_xbot2_torque_ref[i-1] = _container_tx.tor_ref;
+
+        // stiffness ref from XBot2
+        _kp[i-1] = _container_tx.gain_kp;
+        // damping ref from XBot2
+        _kd[i-1] = _container_tx.gain_kd;
 
         // torque ref from XBot2
         // we transform it back taking into account the passive element in the ref
@@ -487,6 +549,8 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
                                     _container_tx.gain_kd * (_doosan_qdotref[i - 1] - _doosan_q_dot[i - 1]) +
                                     _container_tx.tor_ref;
 
+        
+
         // should we update hte xbot2 tor ref with the data we send to the doosan, including spring ? (TBD)
         _container_tx.tor_ref = _doosan_torque_ref[i - 1];
         
@@ -502,6 +566,14 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
 
     // send the torque to the doosan
     move_ok = _drfl.torque_rt(_doosan_torque_ref, 0);
+
+    // log
+    _logger->add("position_reference", toVector(_doosan_qref));
+    _logger->add("velocity_reference", toVector(_doosan_qdotref));
+    _logger->add("doosan_xbot2_torque_reference", toVector(_doosan_xbot2_torque_ref));
+    _logger->add("doosan_torque_reference", toVector(_doosan_torque_ref));
+    _logger->add("joint_stiffness", toVector(_kp));
+    _logger->add("joint_damping", toVector(_kd));
 
     return DeviceContainer::move_all() && move_ok;
 }

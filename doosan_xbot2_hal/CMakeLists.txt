@@ -4,6 +4,7 @@ find_package(ament_cmake REQUIRED)
 
 # XBot2
 find_package(xbot2 REQUIRED)
+find_package(matlogger2 REQUIRED)
 
 option(XBOT2_ENABLE_XENO OFF "Compile against xenomai")
 # set manually xenomai support
@@ -36,6 +37,7 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/external/libPocoNet.so.62"
 target_link_libraries(doosan
     PRIVATE 
     xbot2::xbot2
+    matlogger2::matlogger2
     DRFL
     PocoFoundation
     PocoNet

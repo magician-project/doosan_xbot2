@@ -22,17 +22,21 @@ namespace XBot
             double get_link_vel() const override;
             double get_motor_vel() const override;
             double get_tor() const override;
+            double get_motor_tor() const override;
             double get_stiffness() const override;
             double get_damping() const override;
-            double get_temp() const override;
+            double get_temp_board() const override;
+            double get_temp_motor() const override;
             double get_pos_ref() const override;
             double get_vel_ref() const override;
+            double get_motor_tor_ref() const override;
             double get_tor_ref() const override;
             double get_stiffness_ref() const override;
             double get_damping_ref() const override;
             void set_pos_ref(double q) override;
             void set_vel_ref(double q) override;
             void set_tor_ref(double q) override;
+            void set_motor_tor_ref(double q) override;
             void set_stiffness_ref(double q) override;
             void set_damping_ref(double q) override;
 
