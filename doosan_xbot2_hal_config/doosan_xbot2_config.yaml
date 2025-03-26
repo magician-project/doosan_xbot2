@@ -69,7 +69,7 @@ xbotcore_plugins:
             payload_estimator_link:
               value: link6
               type: string
-            _external_gravity_compensation:
+            external_gravity_compensation:
               value: true  # note: keep false if you care to live
               type: bool
 
