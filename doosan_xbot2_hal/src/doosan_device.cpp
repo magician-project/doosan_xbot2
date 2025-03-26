@@ -551,8 +551,8 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
 
         
 
-        // should we update hte xbot2 tor ref with the data we send to the doosan, including spring ? (TBD)
-        _container_tx.tor_ref = _doosan_torque_ref[i - 1];
+        // should we update the xbot2 tor ref with the data we send to the doosan, including gravity ? (TBD)
+        //_container_tx.tor_ref = _doosan_torque_ref[i - 1];
         
 
         //Context().journal().jhigh().jok("{} : _doosan_qref {}", i, _doosan_qref[i-1]);
