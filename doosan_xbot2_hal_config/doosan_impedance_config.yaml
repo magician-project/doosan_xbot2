@@ -4,8 +4,8 @@ stack:
 EE:
     type: Interaction
     base_link: base_link
-    distal_link: link_6
-    impedance_ref_link: link_6
+    distal_link: tcp
+    impedance_ref_link: tcp
     force_max:
         - 100000.0
         - 100000.0
@@ -14,16 +14,16 @@ EE:
         - 10000.0
         - 10000.0    
     stiffness:
+        - 10000.0
+        - 10000.0
+        - 10000.0
         - 1000.0
+        - 3000.0
         - 1000.0
-        - 1000.0
-        - 100.0
-        - 100.0
-        - 100.0
     damping:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+        - 0.2
+        - 0.2
+        - 0.2
+        - 0.2
+        - 0.1
+        - 0.2

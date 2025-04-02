@@ -494,6 +494,7 @@ bool XBot::Hal::DoosanDriverContainer::sense_all()
     _logger->add("torque_no_passive_spring", toVector(_doosan_torque_no_spring));
     _logger->add("torque_with_passive_spring", toVector(_doosan_torque));
     _logger->add("doosan_gravity_torque", toVector(_doosan_gravity_torque));
+    _logger->add("doosan_tcp_force", toVector(_doosan_data->external_tcp_force));
 
     return DeviceContainer::sense_all() && sense_ok;
 }
