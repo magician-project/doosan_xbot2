@@ -5,7 +5,7 @@ EE:
     type: Interaction
     base_link: base_link
     distal_link: tcp
-    impedance_ref_link: tcp
+    impedance_ref_link: link_6
     force_max:
         - 100000.0
         - 100000.0
