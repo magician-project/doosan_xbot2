@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <doosan_packet.h>
+#include <doosan_packet.h>
 #include <doosan_device.h>
 
 namespace XBot
@@ -8,7 +8,7 @@ namespace XBot
     namespace Hal
     {
 
-        class DoosanClient : public DeviceClientTpl<joint_rx, joint_tx>,
+        class DoosanClient : public DeviceClientTpl<doosan_rx, doosan_tx>,
                              public virtual DoosanBase
         {
 
@@ -16,7 +16,6 @@ namespace XBot
             using DeviceClientTpl::DeviceClientTpl;
 
             // xbot joint base
-
             double get_link_pos() const override;
             double get_motor_pos() const override;
             double get_link_vel() const override;
@@ -41,6 +40,8 @@ namespace XBot
             void set_damping_ref(double q) override;
 
             // custom
+            double get_doosan_gravity_torque() override;
+            void set_acc_ref(double q) override;
         };
     }
 }

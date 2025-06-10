@@ -1,51 +1,55 @@
 #pragma once
 
+#include <xbot2/hal/dev_joint_packet.h>
+
 namespace XBot
 {
     namespace Hal
     {
-        struct doosan_rx
+        struct doosan_rx : joint_rx
         {
-            double position;
-            double velocity;
-            double torque;
-            double stiffness;
-            double damping;
+            float doosan_gravity_torque;
 
-            double position_ref;
-            double velocity_ref;
-            double torque_ref;
-
-            void init()
+            doosan_rx() : joint_rx()
             {
-                position = 0;
-                velocity = 0;
-                torque = 0;
-                stiffness = 1;
-                damping = 1;
+                doosan_gravity_torque = 0.0;
+            };
 
-                position_ref = 0;
-                velocity_ref = 0;
-                torque_ref = 0;
-            }
+            const joint_rx& get_joint_rx() const
+            {
+                return *this;
+            };
+
+            
         };
 
-        struct doosan_tx
+        struct doosan_tx : joint_tx
         {
-            double position_ref;
-            double velocity_ref;
-            double torque_ref;
-            double stiffness_ref;
-            double damping_ref;
+            float target_joint_acceleration;
 
-            void init()
+            doosan_tx() : joint_tx()
             {
-                position_ref = 0;
-                velocity_ref = 0;
-                torque_ref = 0;
-                stiffness_ref = 0;
-                damping_ref = 0;
-            }
+                target_joint_acceleration = 0.0;
+            };
+
+            const joint_tx& get_joint_tx() const
+            {
+                return *this;
+            };
+
+            void reset(const doosan_rx& rx)
+            {
+                joint_tx::reset(rx.get_joint_rx());
+                target_joint_acceleration = 0.0;
+            };
+
+            void apply(const doosan_tx& tx, 
+                       uint8_t mask = std::numeric_limits<uint8_t>::max())
+            {
+                joint_tx::apply(tx.get_joint_tx(), mask);
+                target_joint_acceleration = tx.target_joint_acceleration;
+            };
+
         };
     }
 }

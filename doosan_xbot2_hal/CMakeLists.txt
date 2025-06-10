@@ -6,6 +6,10 @@ find_package(ament_cmake REQUIRED)
 find_package(xbot2 REQUIRED)
 find_package(matlogger2 REQUIRED)
 
+# ros2
+find_package(rclcpp REQUIRED)
+find_package(std_srvs REQUIRED)
+
 option(XBOT2_ENABLE_XENO OFF "Compile against xenomai")
 # set manually xenomai support
 set(XBOT2_ENABLE_XENO OFF)
@@ -13,9 +17,17 @@ set(XBOT2_ENABLE_XENO OFF)
 # headers
 include_directories(include ${XBOT2_INCLUDE_DIRS} )
 
-# xbot2 device
+# globalazze
+add_library(global_vars SHARED src/global_drfl.cpp)
+install(TARGETS global_vars
+        DESTINATION lib)
+
+# xbot2 devices
 add_xbot2_device(doosan 
                  src/doosan_device.cpp)
+
+add_xbot2_device(sander 
+                 src/sander_device.cpp)
 
 #  TBD use @Matteodellevedove find for the libraries
 add_library(DRFL STATIC IMPORTED)
@@ -41,10 +53,49 @@ target_link_libraries(doosan
     DRFL
     PocoFoundation
     PocoNet
+    global_vars
     )
 
 install(TARGETS doosan
         DESTINATION lib)
 
 
-ament_package()
+target_link_libraries(sander
+    PRIVATE 
+    xbot2::xbot2
+    matlogger2::matlogger2
+    DRFL
+    PocoFoundation
+    PocoNet
+    global_vars
+    )
+
+install(TARGETS sander
+        DESTINATION lib)
+
+
+
+#add_xbot2_plugin(grinder_control
+#                src/grinder_control.cpp)
+
+#target_include_directories(grinder_control PRIVATE
+#  ${xbot2_INCLUDE_DIRS}
+#  ${rclcpp_INCLUDE_DIRS}
+#  ${sensor_msgs_INCLUDE_DIRS}
+#  ${std_srvs_INCLUDE_DIRS})
+
+#message("---------------------------------------------- ${rclcpp_LIBRARIES}")
+
+#target_link_libraries(grinder_control PRIVATE
+#  xbot2::xbot2_ros2_support
+#  ${rclcpp_LIBRARIES}
+#  ${std_srvs_LIBRARIES}
+#  matlogger2::matlogger2)
+
+#install(
+#    TARGETS grinder_control
+#    DESTINATION lib
+#    )
+
+
+#ament_package()

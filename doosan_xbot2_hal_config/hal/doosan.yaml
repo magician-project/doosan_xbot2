@@ -3,3 +3,7 @@ xbotcore_devices:
     doosan:
         names: []
         thread: rt_main
+
+    sander:
+        names: []
+        thread: rt_main

@@ -15,6 +15,8 @@ namespace XBot
             XBOT2_DECLARE_SMART_PTR(DoosanBase)
 
             // add doosan methods
+            virtual double get_doosan_gravity_torque() = 0;
+            virtual void set_acc_ref(double q) = 0;
         };
 
     }

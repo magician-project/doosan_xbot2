@@ -10,7 +10,7 @@ option(XBOT2_ENABLE_XENO OFF "Compile against xenomai")
 # set manually xenomai support
 set(XBOT2_ENABLE_XENO OFF)
 
-include_directories(${matlogger2_INCLUDE_DIRS})
+include_directories(${matlogger2_INCLUDE_DIRS} ${doosan_xbot2_hal_INCLUDE_DIRS})
 
 add_xbot2_plugin(periodic_motion
 periodic_motion.cpp)
@@ -21,5 +21,7 @@ install(
     TARGETS periodic_motion
     DESTINATION lib
     )
+
+
 
 ament_package()

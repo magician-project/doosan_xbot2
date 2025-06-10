@@ -8,7 +8,7 @@
 #include <xbot2/hal/dev_joint_safety.h>
 #include <xbot2/hal/dev_joint_packet.h>
 
-//#include <doosan_packet.h>
+#include <doosan_packet.h>
 
 #include <DRFLEx.h>
 
@@ -19,8 +19,8 @@ namespace XBot
     namespace Hal
     {
 
-        class DoosanDriver : public DeviceDriverTpl<joint_rx,
-                                                    joint_tx>
+        class DoosanDriver : public DeviceDriverTpl<doosan_rx,
+                                                    doosan_tx>
         {
 
         public:
@@ -37,7 +37,7 @@ namespace XBot
             // safety for v2.10
             XBot::Hal::JointSafety _safety;
 
-            void on_tx_recv(const joint_tx& msg) override;
+            void on_tx_recv(const doosan_tx& msg) override;
         };
 
         class DoosanDriverContainer : public DeviceContainer<DoosanDriver>
@@ -67,7 +67,7 @@ namespace XBot
 
             static DoosanDriverContainer *_instance; // Singleton instance for static proxies
 
-            DRAFramework::CDRFLEx _drfl;
+            //DRAFramework::CDRFLEx _drfl;
 
             LPRT_OUTPUT_DATA_LIST _doosan_data;
 
@@ -75,6 +75,9 @@ namespace XBot
             bool g_TpInitailizingComplted = false;
 
             float _doosan_q[JOINTS] = {
+                0.0,
+            };
+            float _doosan_q_link[JOINTS] = {
                 0.0,
             };
             float _doosan_q_dot[JOINTS] = {
@@ -110,8 +113,8 @@ namespace XBot
                 0.0,
             };
             
-            joint_rx _container_rx;
-            joint_tx _container_tx;
+            doosan_rx _container_rx;
+            doosan_tx _container_tx;
 
             XBot::MatLogger2::Ptr _logger;
 
