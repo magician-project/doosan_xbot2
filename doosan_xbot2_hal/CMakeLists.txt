@@ -75,27 +75,29 @@ install(TARGETS sander
 
 
 
-#add_xbot2_plugin(grinder_control
-#                src/grinder_control.cpp)
+add_xbot2_plugin(sander_control
+                src/sander_control.cpp)
 
-#target_include_directories(grinder_control PRIVATE
-#  ${xbot2_INCLUDE_DIRS}
-#  ${rclcpp_INCLUDE_DIRS}
-#  ${sensor_msgs_INCLUDE_DIRS}
-#  ${std_srvs_INCLUDE_DIRS})
+target_include_directories(sander_control PRIVATE
+  ${xbot2_INCLUDE_DIRS}
+  ${rclcpp_INCLUDE_DIRS}
+  ${std_srvs_INCLUDE_DIRS})
 
-#message("---------------------------------------------- ${rclcpp_LIBRARIES}")
+#ament_target_dependencies(sander_control rclcpp std_srvs)
 
-#target_link_libraries(grinder_control PRIVATE
-#  xbot2::xbot2_ros2_support
-#  ${rclcpp_LIBRARIES}
-#  ${std_srvs_LIBRARIES}
-#  matlogger2::matlogger2)
+message("---------------------------------------------- ${rclcpp_LIBRARIES}")
 
-#install(
-#    TARGETS grinder_control
-#    DESTINATION lib
-#    )
+target_link_libraries(sander_control PRIVATE
+  xbot2::xbot2_ros2_support
+  PUBLIC
+  rclcpp::rclcpp
+  ${std_srvs_LIBRARIES}
+  matlogger2::matlogger2)
+
+install(
+    TARGETS sander_control
+    DESTINATION lib
+    )
 
 
-#ament_package()
+ament_package()

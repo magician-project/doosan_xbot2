@@ -1,6 +1,6 @@
 XBotInterface:
-  urdf: xacro $(ros2 pkg prefix --share doosan_urdf)/urdf/h2515.urdf.xacro gripper:=vision setup:=iit
-  srdf: xacro $(ros2 pkg prefix --share doosan_srdf)/srdf/h2515.srdf.xacro gripper:=vision
+  urdf: xacro $(ros2 pkg prefix --share doosan_urdf)/urdf/h2515.urdf.xacro gripper:=dewalt setup:=iit
+  srdf: xacro $(ros2 pkg prefix --share doosan_srdf)/srdf/h2515.srdf.xacro gripper:=dewalt
 
 ModelInterface:
   model_type: "pin"
@@ -13,7 +13,7 @@ xbotcore_device_configs:
 
 # threads
 xbotcore_threads:
-    rt_main:  {sched: fifo , prio: 99, period: 0.001}
+    rt_main:  {sched: fifo , prio: 99, period: 0.0005}
     nrt_main: {sched: other, prio: 0 , period: 0.001}
 
 
@@ -27,7 +27,7 @@ xbotcore_plugins:
         thread: rt_main
         type: homing
         params:
-            qhome: {value: [0, 0.7, 1.1, 0.0, 1.4, 0.0], type: Eigen::VectorXd}
+            qhome: {value: [0, 0.7, 1.1, 0.0, 1.4, 1.57], type: Eigen::VectorXd}
 
     ros_io: {thread: nrt_main, type: ros2_io, params: {publish_tf: {type: bool, value: true}}}
     ros_control: {thread: nrt_main, type: ros2_control, params: {autostart: {type: bool, value: false}}}
@@ -58,7 +58,7 @@ xbotcore_plugins:
         params:
            q_home_start: {value: [0, 0.5, -0.5, 0, 0, 0], type: Eigen::VectorXd}
            q_home_end:   {value: [0, -0.5, 1.0, 0.5, -1.57, -1.57], type: Eigen::VectorXd}
-           time: {value: 5.0, type: double}
+           time: {value: 10.0, type: double}
     
     gcomp_example:
         type: gcomp_example
@@ -67,6 +67,12 @@ xbotcore_plugins:
             enabled_chains: 
                 value: [arm]
                 type: vector<string>
+
+    sander_control:
+        type: sander_control
+        thread: nrt_main
+        params: 
+            autostart: {type: bool, value: true}
             
 
     cartesio_imp: 

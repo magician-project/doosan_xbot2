@@ -105,13 +105,6 @@ bool XBot::Hal::SanderDriver::sense_impl()
 
 bool XBot::Hal::SanderDriver::move_impl()
 {
-    cont++;
-    if(cont > 10000){
-        _tx.sander_control = true;
-        //Context().journal().jhigh().jok("Controlling gripper {}", _tx.sander_control);
-        //_drfl.set_digital_output(GPIO_CTRLBOX_DIGITAL_INDEX_1, _tx.sander_control); // NOTE by default is on GPIO 1
-        _rx.sander_status = _tx.sander_control;
-    }
 
     // check sander control
     if(_rx.sander_status != _tx.sander_control) {

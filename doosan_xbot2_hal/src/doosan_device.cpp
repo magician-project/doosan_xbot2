@@ -609,8 +609,6 @@ bool XBot::Hal::DoosanDriverContainer::move_all()
     // send the torque to the doosan
     move_ok = _drfl.torque_rt(_doosan_torque_ref, 0);
 
-
-
     // log
     _logger->add("position_reference", toVector(_doosan_qref));
     _logger->add("velocity_reference", toVector(_doosan_qdotref));
@@ -647,7 +645,8 @@ XBot::Hal::DoosanDriver::DoosanDriver( DeviceInfo di,
                       JointBase::Resource::Mask::Impedance);
 
 
-    Context().journal().jhigh().jok("connected to {} with name '{}' and period '{} s' \n", di.type, di.name, get_period_sec());
+    Context().journal().jhigh().jok("connected to {} with name '{}' and period '{} s' \n", 
+                                     di.type, di.name, get_period_sec());
 }
 
 bool XBot::Hal::DoosanDriver::sense_impl()
@@ -685,9 +684,6 @@ bool XBot::Hal::DoosanDriver::move_impl()
     // Context().journal().jhigh().jok("DoosanDriver damping_ref {}", _tx.damping_ref);
     // Context().journal().jhigh().jok("DoosanDriver mask {}", _tx.mask);
 
-    //TBD rest mask
-    //_tx.mask = 0;
-    
     return true;
 }
 
@@ -697,7 +693,6 @@ void XBot::Hal::DoosanDriver::on_tx_recv(const doosan_tx& msg)
     _tx.apply(msg);
 
     // TBD we can also use the acc ref here taken from msg
-   
 
     // Context().journal().jhigh().jinfo("received msg..: mask = {:b}&{:b}, tx = \n{}", msg.mask, msg.resource_mask, msg);
     // Context().journal().jhigh().jinfo("received pos_ref from msg = {}", msg.pos_ref);

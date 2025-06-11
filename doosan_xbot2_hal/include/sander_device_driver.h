@@ -32,8 +32,6 @@ namespace XBot
 
             XBot::MatLogger2::Ptr _logger;
 
-            int cont = 0;
-
         };
 
         class SanderDriverContainer : public DeviceContainer<SanderDriver>
